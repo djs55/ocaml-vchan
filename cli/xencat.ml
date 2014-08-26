@@ -30,14 +30,19 @@ let client domid port =
   >>= fun (ic, oc) ->
   proxy (ic, oc) (Lwt_io.stdin, Lwt_io.stdout)
   >>= fun () ->
-  Client.close (ic, oc)
+  Lwt_io.close ic
+  >>= fun () ->
+  Lwt_io.close oc
 
 let server domid port =
   Server.connect ~domid ~port ()
   >>= fun (ic, oc) ->
   proxy (ic, oc) (Lwt_io.stdin, Lwt_io.stdout)
   >>= fun () ->
-  Server.close (ic, oc)
+  Lwt_io.close ic
+  >>= fun () ->
+  Lwt_io.close oc
+
 
 open Lwt
 
