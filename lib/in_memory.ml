@@ -175,16 +175,16 @@ module Events = struct
   let channels = Array.make 1024 0
   let c = Lwt_condition.create ()
 
-  let rec recv channel event =
+  let rec wait channel event =
     if channels.(channel) > event
     then return channels.(channel)
     else
       Lwt_condition.wait c >>= fun () ->
-      recv channel event
+      wait channel event
 
   let connected_to = Array.make 1024 (-1)
 
-  let send channel =
+  let notify channel =
     let listening = connected_to.(channel) in
     if listening = -1 then begin
       Printf.fprintf stderr "send: event channel %d is closed\n%!" channel;

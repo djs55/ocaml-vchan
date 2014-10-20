@@ -86,16 +86,16 @@ module type EVENTS = sig
   val initial: event
   (** represents an event which 'fired' when the program started *)
 
-  val recv: channel -> event -> event Lwt.t
-  (** [recv channel event] blocks until the system receives an event
+  val wait: channel -> event -> event Lwt.t
+  (** [wait channel event] blocks until the system receives an event
       newer than [event] on channel [channel]. If an event is received
       while we aren't looking then this will be remembered and the
       next call to [after] will immediately unblock. If the system
       is suspended and then resumed, all event channel bindings are invalidated
       and this function will fail with Generation.Invalid *)
 
-  val send: channel -> unit
-  (** [send channel] sends an event along [channel], to another domain
+  val notify: channel -> unit
+  (** [notify channel] sends an event along [channel], to another domain
       which will be woken up *)
 
   val listen: int -> port * channel
