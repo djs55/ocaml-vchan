@@ -67,14 +67,15 @@ let send channel = match channel.state with
   | Unbound ->
     (* This should never happen. This means there must be
        a protocol bug. *)
-    failwith "send: channel is unbound"
+    fail (Failure "send: channel is unbound")
   | Closed ->
     (* This will happen when signalling the other side of a
        connection to shutdown. It does not indicate a bug. *)
-    ()
+    return ()
   | ConnectedTo otherend ->
     otherend.events <- otherend.events + 1;
-    Lwt_condition.broadcast otherend.c ()
+    Lwt_condition.broadcast otherend.c ();
+    return ()
 
 module IntMap = Map.Make(struct type t = int let compare (a: int) (b: int) = compare a b end)
 let listening = ref IntMap.empty
@@ -82,7 +83,7 @@ let listening = ref IntMap.empty
 let listen _ =
   let t = create () in
   listening := IntMap.add t.port t !listening;
-  t.port, t
+  return (t.port, t)
 
 let nr_connected = ref 0
 let assert_cleaned_up () =
@@ -98,11 +99,12 @@ let connect _ port =
   this.state <- ConnectedTo other;
   other.state <- ConnectedTo this;
   incr nr_connected;
-  this
+  return this
 
 let close t = match t.state with
   | ConnectedTo other ->
     other.state <- Closed;
     t.state <- Closed;
-    decr nr_connected
-  | _ -> ()
+    decr nr_connected;
+    return ()
+  | _ -> return ()

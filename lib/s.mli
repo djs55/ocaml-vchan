@@ -65,6 +65,8 @@ end
 
 module type EVENTS = sig
 
+  type 'a io
+
   type port with sexp_of
   (** an identifier for a source of events. Ports are allocated by calls to
       [listen], then exchanged out-of-band (typically by xenstore) and
@@ -94,18 +96,18 @@ module type EVENTS = sig
       is suspended and then resumed, all event channel bindings are invalidated
       and this function will fail with Generation.Invalid *)
 
-  val send: channel -> unit
+  val send: channel -> unit io
   (** [send channel] sends an event along [channel], to another domain
       which will be woken up *)
 
-  val listen: int -> port * channel
+  val listen: int -> (port * channel) io
   (** [listen domid] allocates a fresh port and event channel. The port
       may be supplied to [connect] *)
 
-  val connect: int -> port -> channel
+  val connect: int -> port -> channel io
   (** [connect domid port] connects an event channel to [port] on [domid] *)
 
-  val close: channel -> unit
+  val close: channel -> unit io
   (** [close channel] closes this side of an event channel *)
 end
 

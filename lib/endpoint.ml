@@ -84,7 +84,7 @@ type read_write = Read | Write
 
 let bit_of_read_write = function Read -> 2 | Write -> 1
 
-module Make(E : EVENTS)(M: MEMORY)(C: CONFIGURATION) = struct
+module Make(E : EVENTS with type 'a io = 'a Lwt.t)(M: MEMORY)(C: CONFIGURATION) = struct
 
 type server_params =
   {
@@ -248,7 +248,9 @@ let send_notify (vch: t) rdwr =
   let prev =
     (* clear the bit and return previous value *)
     atomic_fetch_and vch.shared_page.buffer idx (lnot bit) in
-  if prev land bit <> 0 then E.send vch.evtchn
+  if prev land bit <> 0
+  then E.send vch.evtchn
+  else return_unit
 
 let fast_get_data_ready (vch: t) request =
   let ready = Int32.(rd_prod vch - rd_cons vch |> to_int) in
@@ -304,7 +306,8 @@ let write vch buf =
     then Lwt.return `Eof
     else
       let avail = min (fast_get_buffer_space vch (len - pos)) (len - pos) in
-      if avail > 0 then _write_noblock vch (Cstruct.sub buf pos avail);
+      ( if avail > 0 then _write_noblock vch (Cstruct.sub buf pos avail) else return_unit )
+      >>= fun () ->
       let pos = pos + avail in
       if pos = len
       then Lwt.return (`Ok ())
@@ -346,7 +349,8 @@ let rec _read_one vch event =
 let read vch =
   (* signal the remote that we've consumed the last block of data it sent us *)
   set_rd_cons vch Int32.(of_int vch.ack_up_to);
-  send_notify vch Read;
+  send_notify vch Read
+  >>= fun () ->
   (* get the fresh data *)
   _read_one vch E.initial >>= function
   | `Ok buf ->
@@ -410,13 +414,14 @@ let server ~domid ~port ?(read_size=1024) ?(write_size=1024) () =
     (match write_shr with None -> [] | Some shr -> M.grants_of_share shr);
 
   (* Allocate the event channel *)
-  let unbound_port, evtchn = E.listen domid in
+  E.listen domid
+  >>= fun (unbound_port, evtchn) ->
 
   (* Write the config to XenStore *)
   let ring_ref = M.grants_of_share shr_shr |> List.hd |> M.int32_of_grant |> Int32.to_string in
 
   C.write ~client_domid:domid ~port { C.ring_ref; event_channel = E.string_of_port unbound_port }
-  >>= fun () -> 
+  >>= fun () ->
 
   let role = Server { shr_shr; read_shr; write_shr } in
   let ack_up_to = 0 in
@@ -427,7 +432,7 @@ let server ~domid ~port ?(read_size=1024) ?(write_size=1024) () =
   (* Wait for the connection *)
   let rec loop event =
     if state vch = WaitingForConnection then begin
-      E.recv evtchn event >>= fun event -> 
+      E.recv evtchn event >>= fun event ->
       loop event
     end else return () in
   loop E.initial
@@ -444,7 +449,7 @@ let client ~domid ~port () =
   >>= fun { C.ring_ref = gntref; event_channel = evtchn } ->
   E.port_of_string evtchn
   >>|= fun unbound_port ->
- 
+
   (* Map the vchan interface page *)
   let mapping = M.map ~domid ~grant:(M.grant_of_int32 (Int32.of_string gntref)) ~rw:true in
   let v = Cstruct.of_bigarray (M.buf_of_mapping mapping) in
@@ -455,12 +460,13 @@ let client ~domid ~port () =
   >>|= fun ro ->
   let nb_left_pages = Location.to_length lo / 4096 in
   let nb_right_pages = Location.to_length ro / 4096 in
-  
+
   (* Ignore trailing junk in v *)
   let v = Cstruct.sub v 0 (sizeof_vchan_interface+4*(nb_left_pages+nb_right_pages)) in
 
   (* Bind the event channel *)
-  let evtchn = E.connect domid unbound_port in
+  E.connect domid unbound_port
+  >>= fun evtchn ->
 
   (* Unmarshal grant references into a form suitable for M.mapv.
      Note: we only call mapv on non-empty lists *)
@@ -488,7 +494,8 @@ let client ~domid ~port () =
   (* Signal the server so it knows we have connected *)
   set_vchan_interface_cli_live v (live_of_state Connected);
   set_vchan_interface_srv_notify v (bit_of_read_write Write);
-  E.send evtchn;
+  E.send evtchn
+  >>= fun () ->
 
   let role = Client { shr_map=mapping; read_map=r_map; write_map=w_map } in
   let ack_up_to = 0 in
@@ -499,17 +506,18 @@ let close (vch: t) =
   match vch.role with
   | Client { shr_map; read_map; write_map } ->
     set_vchan_interface_cli_live vch.shared_page (live_of_state Exited);
-    E.send vch.evtchn;
+    E.send vch.evtchn
+    >>= fun () ->
 
     Opt.iter M.unmap read_map;
     Opt.iter M.unmap write_map;
     M.unmap shr_map;
-    E.close vch.evtchn;
-    return ()
+    E.close vch.evtchn
 
   | Server { shr_shr; read_shr; write_shr } ->
     set_vchan_interface_srv_live vch.shared_page (live_of_state Exited);
-    E.send vch.evtchn;
+    E.send vch.evtchn
+    >>= fun () ->
 
     (* Remove the advertising in xenstore *)
     C.delete ~client_domid:vch.remote_domid ~port:vch.remote_port
@@ -518,7 +526,5 @@ let close (vch: t) =
     Opt.iter M.unshare read_shr;
     Opt.iter M.unshare write_shr;
     M.unshare shr_shr;
-    E.close vch.evtchn;
-    return ()
-
+    E.close vch.evtchn
 end
