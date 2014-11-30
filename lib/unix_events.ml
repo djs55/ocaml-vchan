@@ -53,48 +53,6 @@ let next_port = ref 0
 type event = int with sexp_of
 let initial = 0
 
-let env_var = "XEN_ROOT"
-
-let get_socket_dir =
-  let dir = ref None in
-  fun () ->
-    match !dir with
-    | Some x -> return x
-    | None ->
-      (* This is our lazy init function *)
-      Sys.set_signal Sys.sigpipe Sys.Signal_ignore;
-      let rec loop counter =
-        if counter > 100 then begin
-        Printf.fprintf stderr "Failed to create a private sockets dir (I tried > 100 times!)\n%!";
-        fail (Failure "failed to create private sockets dir")
-        end else begin
-          let path = Filename.(concat temp_dir_name (Printf.sprintf "%s.%d.%d" (basename Sys.argv.(0)) (Unix.getpid ()) counter)) in
-          Lwt.catch
-            (fun () ->
-              Lwt_unix.mkdir path 0o0700
-              >>= fun () ->
-              return path
-            ) (fun _ -> loop (counter + 1))
-        end in
-      (* First look for a path in an environment variable *)
-      Lwt.catch
-        ( fun () ->
-          (try return (Sys.getenv env_var) with e -> fail e)
-          >>= fun root ->
-          Lwt_unix.access root [ Lwt_unix.X_OK ]
-          >>= fun () ->
-          return root )
-        (fun _ ->
-          (* Fall back to creating a fresh path *)
-          loop 0
-          >>= fun path ->
-          (* Print the environment variable needed for other apps to talk to us *)
-          Printf.fprintf stderr "%s=%s\n%!" env_var path;
-          return path)
-      >>= fun path ->
-      dir := Some path;
-      return path
-
 type state =
 | Listening of Lwt_unix.file_descr
 | Connected of Lwt_unix.file_descr
@@ -137,7 +95,7 @@ let nr_connected = ref 0
 
 let listen _ =
   let port_nr = get_next_port_nr () in
-  get_socket_dir ()
+  Unix_common.get_socket_dir ()
   >>= fun dir ->
   let path = Filename.concat dir (string_of_int port_nr) in
 
