@@ -37,6 +37,8 @@ module type CONFIGURATION = sig
 end
 
 module type MEMORY = sig
+  type 'a io = 'a Lwt.t
+
   type grant with sexp
 
   val grant_of_int32: int32 -> grant
@@ -47,17 +49,17 @@ module type MEMORY = sig
   val grants_of_share: share -> grant list
   val buf_of_share: share -> Io_page.t
 
-  val share: domid:int -> npages:int -> rw:bool -> share
+  val share: domid:int -> npages:int -> rw:bool -> share io
 
-  val unshare: share -> unit
+  val unshare: share -> unit io
 
   type mapping with sexp_of
 
   val buf_of_mapping: mapping -> Io_page.t
 
-  val map: domid:int -> grant:grant -> rw:bool -> mapping
+  val map: domid:int -> grant:grant -> rw:bool -> mapping io
 
-  val mapv: grants:(int * grant) list -> rw:bool -> mapping
+  val mapv: grants:(int * grant) list -> rw:bool -> mapping io
 
   val unmap: mapping -> unit
 

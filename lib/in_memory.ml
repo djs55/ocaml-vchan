@@ -54,6 +54,10 @@ module Config = struct
 end
 
 module Memory = struct
+  open Lwt
+
+  type 'a io = 'a Lwt.t
+
   type grant = int32 with sexp
 
   let grant_of_int32 x = x
@@ -89,7 +93,7 @@ module Memory = struct
     let pages = Io_page.to_pages mapping in
     List.iter (fun (grant, page) -> Hashtbl.replace individual_pages grant page) (List.combine grants pages);
     Hashtbl.replace big_mapping (List.hd grants) mapping;
-    share
+    return share
 
   let remove tbl key =
     if Hashtbl.mem tbl key
@@ -101,7 +105,8 @@ module Memory = struct
 
   let unshare share =
     List.iter (fun grant -> remove individual_pages grant) share.grants;
-    remove big_mapping (List.hd share.grants)
+    remove big_mapping (List.hd share.grants);
+    return ()
 
   type mapping = {
     mapping: page;
@@ -119,7 +124,7 @@ module Memory = struct
       failwith (Printf.sprintf "map: grant %ld is already mapped" grant);
     end;
     Hashtbl.replace currently_mapped grant ();
-    { mapping; grants = [ domid, grant ] }
+    return { mapping; grants = [ domid, grant ] }
 
   let mapv ~grants ~rw:_ =
     if grants = [] then begin
@@ -133,7 +138,7 @@ module Memory = struct
       failwith (Printf.sprintf "mapv: grant %ld is already mapped" first);
     end;
     Hashtbl.replace currently_mapped first ();
-    { mapping; grants }
+    return { mapping; grants }
 
   let unmap { mapping; grants } =
     let first = snd (List.hd grants) in

@@ -373,7 +373,8 @@ let server ~domid ~port ?(read_size=1024) ?(write_size=1024) () =
      difficulty mapping or sharing more than one page. *)
 
   (* Allocate and initialise the shared page *)
-  let shr_shr = M.share ~domid ~npages:1 ~rw:true in
+  M.share ~domid ~npages:1 ~rw:true
+  >>= fun shr_shr ->
   let v = Cstruct.of_bigarray (M.buf_of_share shr_shr) in
   set_lc v 0l;
   set_lp v 0l;
@@ -391,14 +392,17 @@ let server ~domid ~port ?(read_size=1024) ?(write_size=1024) () =
 
   let allocate_locations l = match l with
   | Location.Within_shared_page offset ->
-    None, Cstruct.sub v (Location.to_offset offset) (Location.to_length l)
+    return (None, Cstruct.sub v (Location.to_offset offset) (Location.to_length l))
   | Location.External n ->
-    let share = M.share ~domid ~npages:(1 lsl n) ~rw:true in
+    M.share ~domid ~npages:(1 lsl n) ~rw:true
+    >>= fun share ->
     let pages = M.buf_of_share share in
-    Some share, Cstruct.of_bigarray pages in
+    return (Some share, Cstruct.of_bigarray pages) in
 
-  let read_shr, read_buf = allocate_locations read_l in
-  let write_shr, write_buf = allocate_locations write_l in
+  allocate_locations read_l
+  >>= fun (read_shr, read_buf) ->
+  allocate_locations write_l
+  >>= fun (write_shr, write_buf) ->
   let nb_read_pages = match read_shr with None -> 0 | Some shr -> List.length (M.grants_of_share shr) in
 
   (* Write the gntrefs to the shared page. Ordering is left, right. *)
@@ -451,7 +455,8 @@ let client ~domid ~port () =
   >>|= fun unbound_port ->
 
   (* Map the vchan interface page *)
-  let mapping = M.map ~domid ~grant:(M.grant_of_int32 (Int32.of_string gntref)) ~rw:true in
+  M.map ~domid ~grant:(M.grant_of_int32 (Int32.of_string gntref)) ~rw:true
+  >>= fun mapping ->
   let v = Cstruct.of_bigarray (M.buf_of_mapping mapping) in
 
   Location.of_order (get_lo v)
@@ -484,12 +489,15 @@ let client ~domid ~port () =
 
   let map_locations grants l = match l with
   | Location.Within_shared_page offset ->
-    None, Cstruct.sub v (Location.to_offset offset) (Location.to_length l)
+    return (None, Cstruct.sub v (Location.to_offset offset) (Location.to_length l))
   | Location.External n ->
-    let mapping = M.mapv ~grants ~rw:true in
-    Some mapping, Cstruct.of_bigarray (M.buf_of_mapping mapping) in
-  let w_map, w_buf = map_locations lgrants lo in
-  let r_map, r_buf = map_locations rgrants ro in
+    M.mapv ~grants ~rw:true
+    >>= fun mapping ->
+    return (Some mapping, Cstruct.of_bigarray (M.buf_of_mapping mapping)) in
+  map_locations lgrants lo
+  >>= fun (w_map, w_buf) ->
+  map_locations rgrants ro
+  >>= fun (r_map, r_buf) ->
 
   (* Signal the server so it knows we have connected *)
   set_vchan_interface_cli_live v (live_of_state Connected);
@@ -523,8 +531,17 @@ let close (vch: t) =
     C.delete ~client_domid:vch.remote_domid ~port:vch.remote_port
     >>= fun () ->
 
-    Opt.iter M.unshare read_shr;
-    Opt.iter M.unshare write_shr;
-    M.unshare shr_shr;
+    ( match read_shr with
+      | Some x -> M.unshare x
+      | None -> return () )
+    >>= fun () ->
+
+    ( match write_shr with
+      | Some x -> M.unshare x
+      | None -> return () )
+    >>= fun () ->
+
+    M.unshare shr_shr
+    >>= fun () ->
     E.close vch.evtchn
 end
