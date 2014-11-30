@@ -30,6 +30,7 @@ module Config = struct
 
   let write ~client_domid ~port t =
     Hashtbl.replace tbl port t;
+    Lwt_condition.broadcast c ();
     return ()
 
   let read ~server_domid ~port =
