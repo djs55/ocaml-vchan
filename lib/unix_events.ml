@@ -54,7 +54,7 @@ type event = int with sexp_of
 let initial = 0
 
 type state =
-| Listening of Lwt_unix.file_descr
+| Listening of (Lwt_unix.file_descr * string)
 | Connected of Lwt_unix.file_descr
 | Closed with sexp_of
 
@@ -75,7 +75,7 @@ let rec receive_events t = match t.state with
   if n = 0
   then fail End_of_file
   else receive_events t
-| Listening _ ->
+| Listening (_, _) ->
   let msg = "Cannot receive events in the Listening state" in
   Printf.fprintf stderr "%s\n%!" msg;
   fail (Failure msg)
@@ -103,7 +103,7 @@ let listen _ =
   Lwt_unix.bind fd (Lwt_unix.ADDR_UNIX path);
   let events = initial in
   let c = Lwt_condition.create () in
-  let state = Listening fd in
+  let state = Listening (fd, path) in
   let t = { events; c; state; th = None } in
 
   let th =
@@ -112,6 +112,8 @@ let listen _ =
     >>= fun (fd', sockaddr) ->
     t.state <- Connected fd';
     Lwt_unix.close fd
+    >>= fun () ->
+    Lwt_unix.unlink path
     >>= fun () ->
     receive_events t in
   t.th <- Some th;
@@ -135,11 +137,19 @@ let connect _ port =
   return t
 
 let close t = match t with
-| { state = Connected fd; th = Some th }
-| { state = Listening fd; th = Some th } ->
+| { state = Connected fd; th = Some th } ->
   t.state <- Closed;
   Lwt.cancel th;
   Lwt_unix.close fd
+  >>= fun () ->
+  decr nr_connected;
+  return ()
+| { state = Listening (fd, path); th = Some th } ->
+  t.state <- Closed;
+  Lwt.cancel th;
+  Lwt_unix.close fd
+  >>= fun () ->
+  Lwt_unix.unlink path
   >>= fun () ->
   decr nr_connected;
   return ()
@@ -167,7 +177,7 @@ let send = function
      | e -> fail e)
 | { state = Closed } ->
   return ()
-| { state = Listening _ } ->
+| { state = Listening (_, _) } ->
   let msg = "Cannot send while in the Listening state" in
   Printf.fprintf stderr "%s\n%!" msg;
   fail (Failure "Cannot send while in the Listening state")
