@@ -15,8 +15,7 @@
  *)
 open Vchan
 
-module M = Endpoint.Make(Unix_events)(Unix_memory)(Unix_configuration)
-
+module M = Endpoint.Make(Xenctrl_events)(Xenctrl_memory)(Vchan.Xenstore.Make(Xs))
 include Vchan_lwt_io.Make(M)
 
 module IO = struct
