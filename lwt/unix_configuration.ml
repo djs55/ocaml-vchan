@@ -28,11 +28,15 @@ type t = {
 let _env_var = "XEN_CONFIGURATION"
 
 let write ~client_domid ~port t =
-  Printf.fprintf stderr "%s=\"%s\"\n%!" _env_var (String.escaped (Sexplib.Sexp.to_string_hum (sexp_of_t t)));
+  Printf.fprintf stderr "%s=\"%s\"; export %s\n%!" _env_var (String.escaped (Sexplib.Sexp.to_string_hum (sexp_of_t t))) _env_var;
   return ()
 
 let read ~server_domid ~port =
-  return (t_of_sexp (Sexplib.Sexp.of_string (Sys.getenv _env_var)))
+  try
+    return (t_of_sexp (Sexplib.Sexp.of_string (Sys.getenv _env_var)))
+  with Not_found ->
+    Printf.fprintf stderr "Failed to find %s in the process environment\n%!" _env_var;
+    fail Not_found
 
 let delete ~client_domid ~port =
   return ()

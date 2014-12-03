@@ -66,7 +66,7 @@ let get_xen_root = cache (fun () ->
       loop 0
       >>= fun path ->
       (* Print the environment variable needed for other apps to talk to us *)
-      Printf.fprintf stderr "%s=%s\n%!" env_var path;
+      Printf.fprintf stderr "%s=%s; export %s;\n%!" env_var path env_var;
       return path)
 )
 
