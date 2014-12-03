@@ -79,5 +79,7 @@ module Make(Xs: Xs_client_lwt.S) = struct
         )
     )
 
+  let description = "Configuration information will be shared via Xenstore keys"
+
 end
 

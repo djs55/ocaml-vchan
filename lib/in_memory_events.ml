@@ -108,3 +108,5 @@ let close t = match t.state with
     decr nr_connected;
     return ()
   | _ -> return ()
+
+let description = "Event signalling will use a condition variable in the OCaml heap."

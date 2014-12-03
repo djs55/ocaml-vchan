@@ -14,6 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 open Sexplib.Std
+open Lwt
+
+type 'a io = 'a Lwt.t
 
 type grant = int32 with sexp
 
@@ -43,12 +46,12 @@ let gntshr_interface_open =
 let share ~domid ~npages ~rw =
   let i = gntshr_interface_open () in
   let s = Gnt.Gntshr.share_pages_exn i domid npages rw in
-  { grants = List.map Int32.of_int s.Gnt.Gntshr.refs; mapping = s.Gnt.Gntshr.mapping }
+  return { grants = List.map Int32.of_int s.Gnt.Gntshr.refs; mapping = s.Gnt.Gntshr.mapping }
 
 let unshare s =
   let i = gntshr_interface_open () in
   let s' = { Gnt.Gntshr.refs = List.map Int32.to_int s.grants; mapping = s.mapping } in
-  Gnt.Gntshr.munmap_exn i s'
+  return (Gnt.Gntshr.munmap_exn i s')
 
 let gnttab_interface_open =
   let cache = ref None in
@@ -72,13 +75,15 @@ let buf_of_mapping m = Gnt.Gnttab.Local_mapping.to_buf m.mapping
 let map ~domid ~grant ~rw =
   let i = gnttab_interface_open () in
   let mapping = Gnt.Gnttab.map_exn i { Gnt.Gnttab.domid; ref = Int32.to_int grant } rw in
-  { mapping; grants = [ domid, grant ] }
+  return { mapping; grants = [ domid, grant ] }
 
 let mapv ~grants ~rw =
   let i = gnttab_interface_open () in
   let mapping = Gnt.Gnttab.mapv_exn i (List.map (fun (domid, gntref) -> { Gnt.Gnttab.domid; ref = Int32.to_int gntref }) grants) rw in
-  { mapping; grants }
+  return { mapping; grants }
 
 let unmap m =
   let i = gnttab_interface_open () in
   Gnt.Gnttab.unmap_exn i m.mapping
+
+let description = "Memory will be shared via the Linux grant driver (gntdev) and grant share driver (gntshr)."

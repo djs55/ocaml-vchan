@@ -109,3 +109,5 @@ let map ~domid ~grant ~rw =
 let unmap { mapping; grants } = ()
 
 let assert_cleaned_up () = ()
+
+let description = "Memory pages will be shared using mmap(2)."

@@ -34,6 +34,9 @@ module type CONFIGURATION = sig
      client_domid:int -> port:Port.t
   -> unit Lwt.t
 
+  val description: string
+  (** Human-readable description suitable for help text or
+      a manpage *)
 end
 
 module type MEMORY = sig
@@ -63,6 +66,9 @@ module type MEMORY = sig
 
   val unmap: mapping -> unit
 
+  val description: string
+  (** Human-readable description suitable for help text or
+      a manpage *)
 end
 
 module type EVENTS = sig
@@ -111,6 +117,10 @@ module type EVENTS = sig
 
   val close: channel -> unit io
   (** [close channel] closes this side of an event channel *)
+  
+  val description: string
+  (** Human-readable description suitable for help text or
+      a manpage *)
 end
 
 module type ENDPOINT = sig
@@ -146,4 +156,8 @@ module type ENDPOINT = sig
     and  type error := error
     and  type 'a io = 'a Lwt.t
     and  type buffer = Cstruct.t
+
+  val description: string
+  (** Human-readable description suitable for help text or
+      a manpage *)
 end

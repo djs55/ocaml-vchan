@@ -14,7 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+(** This module is deprecated. Please use Vchan_lwt_io.Make to select
+    a backend implementation. *)
+
 module M: Vchan.S.ENDPOINT
+  with type 'a io = 'a Lwt.t
 
 module type Cohttp_IO_S = sig
   type +'a t
@@ -35,9 +39,9 @@ module type Cohttp_IO_S = sig
 end
 
 module IO : Cohttp_IO_S
- with type 'a t = 'a Lwt.t
- and type ic = Lwt_io.input_channel
- and type oc = Lwt_io.output_channel
+  with type 'a t = 'a Lwt.t
+   and type ic = Lwt_io.input_channel
+   and type oc = Lwt_io.output_channel
 
 val open_client :
     domid:int -> port:Vchan.Port.t

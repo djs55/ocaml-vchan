@@ -86,6 +86,10 @@ let bit_of_read_write = function Read -> 2 | Write -> 1
 
 module Make(E : EVENTS with type 'a io = 'a Lwt.t)(M: MEMORY)(C: CONFIGURATION) = struct
 
+let description =
+ "We will use the Xen Vchan shared-memory protocol. "
+  ^ E.description ^ " " ^ M.description ^ " " ^ C.description
+
 type server_params =
   {
     shr_shr: M.share;

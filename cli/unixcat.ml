@@ -13,14 +13,11 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
+
 open Vchan
 
 module M = Endpoint.Make(Unix_events)(Unix_memory)(Unix_configuration)
 
-include Vchan_lwt_io.Make(M)
+module Impl = Cat.Make(Vchan_lwt_io.Make(M))
 
-module IO = struct
-  include Vchan_lwt_io.Make(M)
-end
-
-include Vchan_lwt_io
+let _ = Impl.main "unixcat"

@@ -14,6 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 open Sexplib.Std
+open Lwt
+
+type 'a io = 'a Lwt.t
 
 type port = int with sexp_of
 
@@ -37,17 +40,19 @@ let recv = Unix_activations.after
 
 let send channel =
   let h = Eventchn.init () in
-  Eventchn.notify h channel
+  return (Eventchn.notify h channel)
 
 let listen domid =
   let h = Eventchn.init () in
   let port = Eventchn.bind_unbound_port h domid in
-  Eventchn.to_int port, port
+  return (Eventchn.to_int port, port)
 
 let connect domid port =
   let h = Eventchn.init () in
-  Eventchn.bind_interdomain h domid port
+  return (Eventchn.bind_interdomain h domid port)
 
 let close channel =
   let h = Eventchn.init () in
-  Eventchn.unbind h channel
+  return (Eventchn.unbind h channel)
+
+let description = "Events will be signalled via the Linux userspace event channel driver."

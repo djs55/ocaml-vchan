@@ -51,6 +51,8 @@ module Config = struct
       Printf.fprintf stderr "Stale config entries in xenstore\n%!";
       failwith "stale config entries in xenstore";
     end
+
+  let description = "Configuration data will be shared via a Hashtable in the OCaml heap."
 end
 
 module Memory = struct
@@ -158,6 +160,8 @@ module Memory = struct
       Printf.fprintf stderr "Some grants are still active\n%!";
       failwith "some grants are still active"
     end
+
+  let description = "Memory pages will be shared by reference in the OCaml heap."
 end
 
 let assert_cleaned_up () =

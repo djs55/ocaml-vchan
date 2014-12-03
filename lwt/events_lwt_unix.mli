@@ -17,3 +17,4 @@
 (* FIXME: this module should move into xen-evtchn.unix.activations *)
 
 include Vchan.S.EVENTS
+  with type 'a io = 'a Lwt.t

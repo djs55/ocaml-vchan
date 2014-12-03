@@ -31,7 +31,7 @@ Library vchan_lwt_unix
   Path:               lwt
   Findlibname:        lwt
   Findlibparent:      vchan
-  Modules:            Vchan_lwt_unix, Events_lwt_unix, Memory_lwt_unix, Unix_configuration
+  Modules:            Vchan_lwt_io, Vchan_lwt_unix, Events_lwt_unix, Memory_lwt_unix, Unix_configuration
   BuildDepends:       lwt, xen-evtchn (>= 1.0.3), xen-evtchn.unix, xen-evtchn.unix.activations, io-page.unix, xen-gnt, xen-gnt.unix, xenstore, xenstore.client, xenstore_transport, xenstore_transport.lwt, mirage-types.lwt, vchan
 
 Library vchan_xen
@@ -57,11 +57,18 @@ Test core_test
 
 Executable xencat
   Build$:             flag(xenctrl)
-  Install: false
-  CompiledObject: best
-  Path: cli
-  MainIs: xencat.ml
-  BuildDepends: cmdliner, lwt, vchan, vchan.lwt
+  Install:            false
+  CompiledObject:     best
+  Path:               cli
+  MainIs:             xencat.ml
+  BuildDepends:       cmdliner, lwt, vchan, vchan.lwt
+
+Executable unixcat
+  Install:            false
+  CompiledObject:     best
+  Path:               cli
+  MainIs:             unixcat.ml
+  BuildDepends:       cmdliner, lwt, vchan, vchan.lwt
 
 Document api
   Title: Documentation and API reference

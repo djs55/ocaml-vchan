@@ -185,3 +185,5 @@ let send = function
 let assert_cleaned_up () =
   if !nr_connected <> 0
   then failwith (Printf.sprintf "%d event channels are still connected" !nr_connected)
+
+let description = "Event signalling will use connections over Unix domain sockets."

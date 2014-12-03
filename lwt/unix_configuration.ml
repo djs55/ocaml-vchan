@@ -13,6 +13,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
+open Vchan
 
 open Sexplib.Std
 open Lwt
@@ -35,3 +36,5 @@ let read ~server_domid ~port =
 
 let delete ~client_domid ~port =
   return ()
+
+let description = "Configuration information will be shared via Unix environment variables."
