@@ -40,8 +40,8 @@ Library vchan_xen
   Path:               xen
   Findlibname:        xen
   Findlibparent:      vchan
-  Modules:            Vchan_xen, Events_xen, Memory_xen
-  BuildDepends:       lwt, xen-evtchn (>= 1.0.3), xen-gnt, xenstore, xenstore.client, mirage-xen, mirage-types.lwt, vchan
+  Modules:            Vchan_xen
+  BuildDepends:       lwt, xen-evtchn.xen (>= 1.0.5), xen-gnt.xen (>= 2.0.0), xenstore, xenstore.client, mirage-xen, mirage-types.lwt, vchan
 
 Executable test
   Install: false
