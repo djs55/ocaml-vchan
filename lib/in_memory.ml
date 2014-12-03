@@ -167,6 +167,6 @@ end
 let assert_cleaned_up () =
   Memory.assert_cleaned_up ();
   Config.assert_cleaned_up ();
-  In_memory_events.assert_cleaned_up ()
+  Inheap_events.assert_cleaned_up ()
 
-include Endpoint.Make(In_memory_events)(Memory)(Config)
+include Endpoint.Make(Inheap_events)(Memory)(Config)
