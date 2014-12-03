@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-include S.EVENTS with type 'a io = 'a Lwt.t
+include Evtchn.S.EVENTS with type 'a io = 'a Lwt.t
 
 val assert_cleaned_up: unit -> unit
 (** Throws a Failure if there are any resources still in use. This is intended

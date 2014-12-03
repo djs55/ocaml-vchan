@@ -17,4 +17,4 @@
 
 (** Client and server interface for Xen's vchan protocol. *)
 
-module Make(A : S.EVENTS with type 'a io = 'a Lwt.t)(M: S.MEMORY)(C: S.CONFIGURATION) : S.ENDPOINT with type port = Port.t
+module Make(A : Evtchn.S.EVENTS with type 'a io = 'a Lwt.t)(M: Memory.S.MEMORY)(C: S.CONFIGURATION) : S.ENDPOINT with type port = Port.t

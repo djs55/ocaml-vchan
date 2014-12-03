@@ -22,6 +22,8 @@ depends: [
   "xenstore_transport"
   "sexplib"
   "cmdliner"
+  "xen-evtchn"
+  "xen-gnt"
 ]
 depopts: [
   "xen-evtchn" {>= "1.0.3"}

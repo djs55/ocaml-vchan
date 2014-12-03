@@ -17,7 +17,7 @@
 open Vchan
 
 module Xs = Xs_client_lwt.Client(Xs_transport_lwt_unix_client)
-module M = Endpoint.Make(Events_lwt_unix)(Memory_lwt_unix)(Vchan.Xenstore.Make(Xs))
+module M = Endpoint.Make(Xenctrl_events)(Xenctrl_memory)(Vchan.Xenstore.Make(Xs))
 
 module Impl = Cat.Make(Vchan_lwt_io.Make(M))
 
