@@ -21,7 +21,7 @@ Library vchan
   CompiledObject:     best
   Path:               lib
   Findlibname:        vchan
-  Modules:            Endpoint, Port, Xenstore, Location, S, In_memory, In_memory_events, Unix_configuration, Unix_events, Unix_memory, Unix_common
+  Modules:            Endpoint, Port, Xenstore, Location, S, In_memory, In_memory_events, Unix_events, Unix_memory, Unix_common
   BuildDepends:       lwt, cstruct, io-page, cstruct.syntax, mirage-types (>= 1.1.3), mirage-types.lwt, xenstore.client, sexplib, sexplib.syntax
   CSources:           vchan_stubs.c
 
@@ -31,7 +31,7 @@ Library vchan_lwt_unix
   Path:               lwt
   Findlibname:        lwt
   Findlibparent:      vchan
-  Modules:            Vchan_lwt_unix, Events_lwt_unix, Memory_lwt_unix
+  Modules:            Vchan_lwt_unix, Events_lwt_unix, Memory_lwt_unix, Unix_configuration
   BuildDepends:       lwt, xen-evtchn (>= 1.0.3), xen-evtchn.unix, xen-evtchn.unix.activations, io-page.unix, xen-gnt, xen-gnt.unix, xenstore, xenstore.client, xenstore_transport, xenstore_transport.lwt, mirage-types.lwt, vchan
 
 Library vchan_xen
