@@ -16,8 +16,10 @@
 
 open Vchan
 
-module M = Endpoint.Make(Unix_events)(Unix_memory)(Unix_configuration)
+(* This is the Vchan endpoint: *)
+module V = Endpoint.Make(Unix_events)(Unix_memory)(Unix_configuration)
 
-module Impl = Cat.Make(Vchan_lwt_io.Make(M))
+(* The CLI is functorised to share code with multiple backends *)
+module Impl = Cat.Make(Vchan_lwt_io.Make(V))
 
 let _ = Impl.main "unixcat"

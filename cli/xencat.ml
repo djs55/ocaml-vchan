@@ -17,8 +17,10 @@
 open Vchan
 
 module Xs = Xs_client_lwt.Client(Xs_transport_lwt_unix_client)
-module M = Endpoint.Make(Xenctrl_events)(Xenctrl_memory)(Vchan.Xenstore.Make(Xs))
+(* This is the Vchan endpoint: *)
+module V = Endpoint.Make(Xenctrl_events)(Xenctrl_memory)(Vchan.Xenstore.Make(Xs))
 
-module Impl = Cat.Make(Vchan_lwt_io.Make(M))
+(* The CLI is functorised to share code with multiple backends *)
+module Impl = Cat.Make(Vchan_lwt_io.Make(V))
 
 let _ = Impl.main "xencat"
