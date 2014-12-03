@@ -1,3 +1,7 @@
+trunk (unreleased)
+* support Unix shared memory as well as Xen
+* functorise the CLI and instantiate once for Unix and once for Xen
+
 2.0.0 (2014-11-03)
 * add `Vchan_lwt_unix` with instantiation of functor
 * make Vchan.Port.t abstract (previously was a string)
