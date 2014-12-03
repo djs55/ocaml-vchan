@@ -43,7 +43,12 @@ let get_xen_root = cache (fun () ->
         (fun () ->
           Lwt.catch
             (fun () -> Lwt_unix.access path [ Lwt_unix.X_OK ])
-            (fun _ -> Lwt_unix.mkdir path 0o0700)
+            (fun _ ->
+              Lwt_unix.mkdir path 0o0700
+              >>= fun () ->
+              at_exit (fun () -> Unix.rmdir path);
+              return ()
+            )
           >>= fun () ->
           return path
         ) (fun _ -> loop (counter + 1))
@@ -73,7 +78,12 @@ let get_memory_dir = cache (fun () ->
   let dir = Filename.concat root "memory" in
   Lwt.catch
     (fun () -> Lwt_unix.access dir [ Lwt_unix.X_OK ])
-    (fun _ -> Lwt_unix.mkdir dir 0o0700)
+    (fun _ ->
+      Lwt_unix.mkdir dir 0o0700
+      >>= fun () ->
+      at_exit (fun () -> Unix.rmdir dir);
+      return ()
+    )
   >>= fun () ->
   return dir
 )
