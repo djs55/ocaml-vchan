@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: a8179ea8883277eada2c17d3a0a6e5df)
+# DO NOT EDIT (digest: a7c37652773a617d7095741086bcf30f)
+Vchan_lwt_io
 Vchan_lwt_unix
-Events_lwt_unix
-Memory_lwt_unix
+Unix_configuration
 # OASIS_STOP
