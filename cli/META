@@ -1,0 +1,12 @@
+# OASIS_START
+# DO NOT EDIT (digest: e7d8d17b06c251be16a1df5f7650d0dc)
+version = "2.0.0"
+description = "Xen libvchan protocol implementation"
+requires = "lwt vchan cmdliner vchan.lwt_io"
+archive(byte) = "cli.cma"
+archive(byte, plugin) = "cli.cma"
+archive(native) = "cli.cmxa"
+archive(native, plugin) = "cli.cmxs"
+exists_if = "cli.cma"
+# OASIS_STOP
+

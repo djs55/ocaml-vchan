@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 4355f2650fa28879d3b34c3bddf954ad)
+# DO NOT EDIT (digest: 8824e8ded18b77cea40a4c30eef255a8)
 version = "2.0.0"
 description = "Xen libvchan protocol implementation"
 requires =
@@ -9,11 +9,23 @@ archive(byte, plugin) = "vchan.cma"
 archive(native) = "vchan.cmxa"
 archive(native, plugin) = "vchan.cmxs"
 exists_if = "vchan.cma"
+package "xenctrl" (
+ version = "2.0.0"
+ description = "Xen libvchan protocol implementation"
+ requires =
+ "lwt xen-evtchn xen-evtchn.unix xen-evtchn.xenctrl io-page.unix xen-gnt xen-gnt.unix xenstore xenstore.client xenstore_transport xenstore_transport.lwt mirage-types.lwt vchan"
+ archive(byte) = "vchan_xenctrl.cma"
+ archive(byte, plugin) = "vchan_xenctrl.cma"
+ archive(native) = "vchan_xenctrl.cmxa"
+ archive(native, plugin) = "vchan_xenctrl.cmxs"
+ exists_if = "vchan_xenctrl.cma"
+)
+
 package "xen" (
  version = "2.0.0"
  description = "Xen libvchan protocol implementation"
  requires =
- "lwt xen-evtchn xen-gnt xenstore xenstore.client mirage-xen mirage-types.lwt vchan"
+ "lwt xen-evtchn.xen xen-gnt.xen xenstore xenstore.client mirage-xen mirage-types.lwt vchan"
  archive(byte) = "vchan_xen.cma"
  archive(byte, plugin) = "vchan_xen.cma"
  archive(native) = "vchan_xen.cmxa"
@@ -21,16 +33,27 @@ package "xen" (
  exists_if = "vchan_xen.cma"
 )
 
-package "lwt" (
+package "unix" (
  version = "2.0.0"
  description = "Xen libvchan protocol implementation"
- requires =
- "lwt xen-evtchn xen-evtchn.unix xen-evtchn.xenctrl io-page.unix xen-gnt xen-gnt.unix xenstore xenstore.client xenstore_transport xenstore_transport.lwt mirage-types.lwt vchan"
+ requires = "lwt vchan"
  archive(byte) = "vchan_lwt_unix.cma"
  archive(byte, plugin) = "vchan_lwt_unix.cma"
  archive(native) = "vchan_lwt_unix.cmxa"
  archive(native, plugin) = "vchan_lwt_unix.cmxs"
  exists_if = "vchan_lwt_unix.cma"
+)
+
+package "lwt_io" (
+ version = "2.0.0"
+ description = "Xen libvchan protocol implementation"
+ requires =
+ "lwt xen-evtchn xen-evtchn.unix io-page.unix xen-gnt xen-gnt.unix mirage-types.lwt vchan"
+ archive(byte) = "vchan_lwt.cma"
+ archive(byte, plugin) = "vchan_lwt.cma"
+ archive(native) = "vchan_lwt.cmxa"
+ archive(native, plugin) = "vchan_lwt.cmxs"
+ exists_if = "vchan_lwt.cma"
 )
 # OASIS_STOP
 
