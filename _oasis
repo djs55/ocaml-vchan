@@ -25,14 +25,30 @@ Library vchan
   BuildDepends:       lwt, cstruct, io-page, cstruct.syntax, mirage-types (>= 1.1.3), mirage-types.lwt, xenstore.client, sexplib, sexplib.syntax, xen-evtchn, xen-evtchn.inheap, xen-gnt, xen-gnt.inheap
   CSources:           vchan_stubs.c
 
-Library vchan_lwt_unix
+Library vchan_lwt
+  CompiledObject:     best
+  Path:               lwt_io
+  Findlibname:        lwt_io
+  Findlibparent:      vchan
+  Modules:            Vchan_lwt_io
+  BuildDepends:       lwt, xen-evtchn (>= 1.0.3), xen-evtchn.unix, io-page.unix, xen-gnt, xen-gnt.unix, mirage-types.lwt, vchan
+
+Library vchan_xenctrl
   Build$:             flag(xenctrl)
   CompiledObject:     best
-  Path:               lwt
-  Findlibname:        lwt
+  Path:               xenctrl
+  Findlibname:        xenctrl
   Findlibparent:      vchan
-  Modules:            Vchan_lwt_io, Vchan_lwt_unix, Unix_configuration
+  Modules:            Vchan_lwt_unix
   BuildDepends:       lwt, xen-evtchn (>= 1.0.3), xen-evtchn.unix, xen-evtchn.xenctrl, io-page.unix, xen-gnt, xen-gnt.unix, xenstore, xenstore.client, xenstore_transport, xenstore_transport.lwt, mirage-types.lwt, vchan
+
+Library vchan_lwt_unix
+  CompiledObject:     best
+  Path:               lwt
+  Findlibname:        unix
+  Findlibparent:      vchan
+  Modules:            Unix_configuration
+  BuildDepends:       lwt, vchan
 
 Library vchan_xen
   Build$:             flag(xen)
@@ -55,20 +71,26 @@ Test core_test
   Command:            $test
   WorkingDirectory:   lib_test
 
+Library cli
+  CompiledObject:     best
+  Path:               cli
+  Modules:            Cat
+  BuildDepends:       lwt, vchan, cmdliner, vchan.lwt_io
+
 Executable xencat
   Build$:             flag(xenctrl)
   Install:            false
   CompiledObject:     best
-  Path:               cli
+  Path:               xencat
   MainIs:             xencat.ml
-  BuildDepends:       cmdliner, lwt, vchan, vchan.lwt, xen-evtchn.xenctrl, xen-gnt.xenctrl
+  BuildDepends:       cmdliner, lwt, vchan, vchan.xenctrl, xen-evtchn.xenctrl, xen-gnt.xenctrl, cli
 
 Executable unixcat
   Install:            false
   CompiledObject:     best
-  Path:               cli
+  Path:               unixcat
   MainIs:             unixcat.ml
-  BuildDepends:       cmdliner, lwt, vchan, vchan.lwt, xen-evtchn.unix, xen-gnt.unix
+  BuildDepends:       cmdliner, lwt, vchan, vchan.lwt_io, vchan.unix, xen-evtchn.unix, xen-gnt.unix, cli
 
 Document api
   Title: Documentation and API reference
