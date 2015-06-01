@@ -1203,7 +1203,7 @@ h=caml_parse_sign_and_base(a),d=h[0],i=h[1],e=h[2],g=caml_ml_string_length(a),j=
 b=c;for(d++;d<g;d++){f=caml_string_unsafe_get(a,d);if(f==95)continue;c=caml_parse_digit(f);if(c<0||c>=e)break;b=e*b+c;if(b>j)caml_failwith(nU)}if(d!=g)caml_failwith(nU);b=i*b;if(e==10&&(b|0)!=b)caml_failwith(nU);return b|0}function
 caml_ba_get_1(a,b){return a.get1(b)}function
 stub_atomic_or_fetch_uint8(a,b,c){var
-d=caml_ba_get_1(a,b);return d||c}var
+d=caml_ba_get_1(a,b);return d|c}var
 caml_marshal_constants={PREFIX_SMALL_BLOCK:a_,PREFIX_SMALL_INT:64,PREFIX_SMALL_STRING:32,CODE_INT8:0,CODE_INT16:1,CODE_INT32:2,CODE_INT64:3,CODE_SHARED8:4,CODE_SHARED16:5,CODE_SHARED32:6,CODE_BLOCK32:8,CODE_BLOCK64:19,CODE_STRING8:9,CODE_STRING32:10,CODE_DOUBLE_BIG:11,CODE_DOUBLE_LITTLE:12,CODE_DOUBLE_ARRAY8_BIG:13,CODE_DOUBLE_ARRAY8_LITTLE:14,CODE_DOUBLE_ARRAY32_BIG:15,CODE_DOUBLE_ARRAY32_LITTLE:7,CODE_CODEPOINTER:16,CODE_INFIXPOINTER:17,CODE_CUSTOM:18};function
 caml_js_equals(a,b){return+(a==b)}function
 caml_greaterthan(a,b){return+(caml_compare_val(a,b,false)>0)}function
@@ -1671,7 +1671,7 @@ caml_ba_get_3(a,b,c,d){return a.get([b,c,d])}function
 caml_check_bound(a,b){if(b>>>0>=a.length-1)caml_array_bound_error();return a}function
 caml_static_alloc(a){return caml_create_string(a)}function
 stub_atomic_fetch_and_uint8(a,b,c){var
-d=caml_ba_get_1(a,b);return d&&c}function
+d=caml_ba_get_1(a,b);return d&c}function
 caml_compare_bigstring(a,b,c,d,e){var
 f,g;for(f=0;f<e;f++){g=caml_int_compare(caml_ba_get_1(a,b+f),caml_ba_get_1(c,d+f));if(g!=0)return g}return 0}var
 caml_hash=function(){var
